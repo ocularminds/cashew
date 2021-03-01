@@ -1,0 +1,150 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.gradle.api.tasks.testing.logging.TestLogEvent
+
+buildscript {
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
+}
+
+plugins {
+    id 'java'
+    id 'maven-publish'
+    id 'pmd'
+    id 'jacoco'
+    id "org.springframework.boot" version "2.4.0"
+    id 'com.github.kt3k.coveralls' version '2.8.4'
+}
+
+apply plugin: 'java'
+apply plugin: 'io.spring.dependency-management'
+
+repositories {
+    mavenLocal()
+    maven {
+        url = 'https://repo.maven.apache.org/maven2/'
+    }
+   maven {url='https://mvnrepository.com/artifact/org.kt3k.gradle.plugin/coveralls-gradle-plugin'}
+   jcenter()
+}
+
+dependencies {
+    implementation("org.springframework.boot:spring-boot-starter-web"){
+        exclude(module: "spring-boot-starter-tomcat")
+    }
+    implementation 'org.springframework.boot:spring-boot-starter-undertow'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-data-rest'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+
+    implementation 'org.springframework.boot:spring-boot-starter-aop'    
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+    implementation 'org.aspectj:aspectjweaver:1.9.6'
+    implementation 'javax.validation:validation-api:2.0.1.Final'
+    implementation 'org.postgresql:postgresql:42.2.9'
+    implementation 'com.zaxxer:HikariCP:3.4.5'
+    implementation 'commons-io:commons-io:2.6'
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.2'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.2',
+            'io.jsonwebtoken:jjwt-jackson:0.11.2' 
+    implementation group: 'org.eluder.coveralls', name: 'coveralls-maven-plugin', version: '4.3.0'
+
+    testImplementation 'junit:junit:4.12'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'com.h2database:h2:1.4.200'
+
+}
+
+group = 'cashewpay'
+version = '0.0.1'
+sourceCompatibility = '1.8'
+targetCompatibility = 1.8
+
+configurations {
+    implementation.exclude module: 'spring-boot-starter-tomcat'
+}
+
+coveralls {
+    jacocoReportPath 'build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml'
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled = true // coveralls plugin depends on xml format report
+        html.enabled = true
+    }
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+bootJar {
+    mainClassName = 'cashew.App'
+}
+
+clean.doFirst {
+    delete "${rootDir}"+File.separator+"target"+File.separator
+    delete "${rootDir}"+File.separator+"logs"+File.separator
+    delete "${rootDir}"+File.separator+"target"+File.separator
+    delete "${rootDir}"+File.separator+"bin"+File.separator    
+}
+
+task copyJar(){
+    dependsOn bootJar
+    println 'Copying jar file to project root directory...'
+    doLast{
+        new File("${project.buildDir}/bin").mkdirs()
+        copy{
+            from new File("${project.buildDir}/libs")
+            into new File("${project.projectDir}")
+            rename { String fileName -> fileName.replace("cashewpay-0.0.1", "cashewpay")}
+        }
+    }
+}
+
+tasks.withType(Test) {
+    useJUnit()
+    maxHeapSize = '1G'
+    testLogging {
+        // set options for log level LIFECYCLE
+        events TestLogEvent.FAILED,
+        TestLogEvent.PASSED,
+        TestLogEvent.SKIPPED,
+        TestLogEvent.STANDARD_OUT
+        exceptionFormat TestExceptionFormat.FULL
+        showExceptions true
+        showCauses true
+        showStackTraces true
+        ignoreFailures true
+        maxParallelForks 4
+
+        // set options for log level DEBUG and INFO
+        debug {
+            events TestLogEvent.STARTED,
+            TestLogEvent.FAILED,
+            TestLogEvent.PASSED,
+            TestLogEvent.SKIPPED,
+            TestLogEvent.STANDARD_ERROR,
+            TestLogEvent.STANDARD_OUT
+            exceptionFormat TestExceptionFormat.FULL
+        }
+        info.events = debug.events
+        info.exceptionFormat = debug.exceptionFormat
+
+        afterSuite { desc, result ->
+            if (!desc.parent) { // will match the outermost suite
+                def output = "Results: ${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} successes, ${result.failedTestCount} failures, ${result.skippedTestCount} skipped)"
+                def startItem = '|  ', endItem = '  |'
+                def repeatLength = startItem.length() + output.length() + endItem.length()
+                println('\n' + ('-' * repeatLength) + '\n' + startItem + output + endItem + '\n' + ('-' * repeatLength))
+            }
+        }
+    }
+}
+
+bootJar.finalizedBy copyJar

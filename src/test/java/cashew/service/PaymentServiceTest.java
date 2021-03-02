@@ -29,7 +29,7 @@ import cashew.repository.PaymentRepository;
 import cashew.repository.BankPaymentRepository;
 import cashew.repository.CardPaymentRepository;
 import cashew.repository.MobilePaymentRepository;
-
+import io.micrometer.core.instrument.MeterRegistry;
 /**
  * Test cases for the ProviderService public methods
  *
@@ -37,6 +37,9 @@ import cashew.repository.MobilePaymentRepository;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class PaymentServiceTest {
+
+    @Mock
+    MeterRegistry meterRegistry;
     
     @Mock
     transient PaymentRepository paymentRepository;

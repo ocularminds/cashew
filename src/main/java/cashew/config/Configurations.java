@@ -14,6 +14,10 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.boot.actuate.autoconfigure.metrics.MeterRegistryCustomizer;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Meter.Type;
 
 @Configuration
 @EnableTransactionManagement
@@ -28,5 +32,25 @@ public class Configurations implements WebMvcConfigurer {
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         mapper.setSerializationInclusion(Include.NON_NULL);
         return new MappingJackson2HttpMessageConverter(mapper);
+    }
+    
+    @Bean
+    MeterRegistryCustomizer<MeterRegistry> registerLoginSuccess() {
+        return registry -> registry.config().namingConvention().name("services.login.success", Type.COUNTER);
+    }
+
+    @Bean
+    MeterRegistryCustomizer<MeterRegistry> registerLoginFailure() {
+        return registry -> registry.config().namingConvention().name("services.login.failure", Type.COUNTER);
+    }
+    
+    @Bean
+    MeterRegistryCustomizer<MeterRegistry> registerPaymentSuccess() {
+        return registry -> registry.config().namingConvention().name("services.payment.success", Type.COUNTER);
+    }
+
+    @Bean
+    MeterRegistryCustomizer<MeterRegistry> registerPaymentFailure() {
+        return registry -> registry.config().namingConvention().name("services.payment.failure", Type.COUNTER);
     }
 }

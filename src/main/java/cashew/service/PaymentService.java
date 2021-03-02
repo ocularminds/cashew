@@ -12,6 +12,8 @@ import java.util.Locale;
 import java.util.logging.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import cashew.Constant;
 import cashew.error.AuthorizationError;
 import cashew.error.NotFoundError;
@@ -40,6 +42,8 @@ public class PaymentService {
     private final transient MobilePaymentRepository mobilePaymentRepository;
     private final transient PaymentProcessor processor;
     static final String FAILED = "Not authorized";
+    private final transient Counter success;
+    private final transient Counter failures;
     static final Logger LOG = Logger.getLogger(PaymentService.class.getName());
 
     @Autowired
@@ -47,7 +51,10 @@ public class PaymentService {
         PaymentRepository paymentRepository,
         BankPaymentRepository bankPaymentRepository,
         CardPaymentRepository cardPaymentRepository,
-        MobilePaymentRepository mobilePaymentRepository) {
+        MobilePaymentRepository mobilePaymentRepository,
+        MeterRegistry meterRegistry) {       
+        this.success = meterRegistry.counter("services.payment.success");
+        this.failures = meterRegistry.counter("services.payment.failure");
         this.repository = paymentRepository;
         this.bankPaymentRepository = bankPaymentRepository;
         this.cardPaymentRepository = cardPaymentRepository;
@@ -68,14 +75,22 @@ public class PaymentService {
      */
     public Fault create(Map<String,String> params) throws InvalidParamsException {
         if (params.get("method") == null || params.get("method").isEmpty()) {
+            incrementFailures();
             throw new InvalidParamsException("No payment method selected.");
         }
         if (null == params.get("hash") || params.get("hash").isEmpty()) {
+            incrementFailures();
             throw new InvalidParamsException("Missing payment hash");
         }
         
         String method = params.get("method").toUpperCase(Locale.ROOT);
         Fault fault = Handlers.valueOf(method).handle(processor, params);
+        if(fault.isSuccess()){
+            incrementSuccess();
+        } else{
+            incrementFailures();
+        }
+
         Object payment = fault.getData();
         Payment output;
         if(payment instanceof BankPayment){
@@ -141,5 +156,13 @@ public class PaymentService {
     @SuppressWarnings("unchecked")
     public List<Payment> findByMerchant(String merchant) {
         return repository.findAllMerchantPayments(merchant);
+    }
+
+    private void incrementFailures(){
+        if(failures != null) failures.increment();
+    }
+
+    private void incrementSuccess(){
+        if(success != null) success.increment();
     }
 }

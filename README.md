@@ -26,6 +26,12 @@ The following endpoints are available:
 5. https://127.0.0.1:5615/payments/card GET List all card payments
 6. http://127.0.0.1:5615/payments/bank GET List all bank payments
 7. https://127.0.0.1:5615/payments/mobile GET List all mobile payments
+8. https://127.0.0.1:5615/actuator/health 
+9. http://127.0.0.1:5615/actuator/metrics/services.login.success
+10. http://127.0.0.1:5615/actuator/metrics/services.login.failures
+11. http://127.0.0.1:5615/actuator/metrics/services.payment.success
+12. http://127.0.0.1:5615/actuator/metrics/services.payment.failures
+13. https://127.0.0.1:5615/actuator/httptrace
 
 
 Obtain a token by sending a post form request to http://127.0.0.1:5615/auth with credentials username and password having values `admin` and `admin` respectively.
@@ -41,7 +47,7 @@ Obtain a token by sending a post form request to http://127.0.0.1:5615/auth with
 }
 ```
 
-Use the token in the request header:
+Use the token from data field in the auth response in the request header:
 GET http://127.0.0.1:5615/payments
 Authentication: Bearer + token
 

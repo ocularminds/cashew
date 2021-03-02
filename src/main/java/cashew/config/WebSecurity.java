@@ -19,6 +19,7 @@ class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             .antMatchers(HttpMethod.GET, "/").permitAll()
             .antMatchers(HttpMethod.GET, "/ping").permitAll()
             .antMatchers(HttpMethod.POST, "/auth").permitAll()
+            .antMatchers(HttpMethod.GET, "/actuator/**").hasRole("ADMIN") 
             .anyRequest().authenticated();
     }
 }

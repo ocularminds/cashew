@@ -36,7 +36,12 @@ public class LoginService {
     }
 
 	private String createToken(String username) {
-		List<GrantedAuthority> authorities = AuthorityUtils.commaSeparatedStringToAuthorityList("ROLE_USER");
+		List<GrantedAuthority> authorities;
+        if(username.equals("admin")) {
+           authorities = AuthorityUtils.commaSeparatedStringToAuthorityList("ROLE_USER");
+        } else {
+           authorities = AuthorityUtils.commaSeparatedStringToAuthorityList("ROLE_ADMIN");
+        }
 		String token = Jwts
             .builder()
             .setId(Constant.JWT_TOKEN_ID)

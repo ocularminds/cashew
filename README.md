@@ -18,6 +18,16 @@ To run the service do the following:
   {"app":"Cashew Payments","status":"Running. Healthy.","uptime":"202secs"}
 ```
 
+The following endpoints are available:
+1. http://127.0.0.1:5615 Readiness
+2. http://127.0.0.1:5615/ping Health check
+3. http://127.0.0.1:5615/auth POST form data for authentication
+4. http://127.0.0.1:5615/payments GET/POST Send new payment or list all payments
+5. https://127.0.0.1:5615/payments/card GET List all card payments
+6. http://127.0.0.1:5615/payments/bank GET List all bank payments
+7. https://127.0.0.1:5615/payments/mobile GET List all mobile payments
+
+
 Obtain a token by sending a post form request to http://127.0.0.1:5615/auth with credentials username and password having values `admin` and `admin` respectively.
 
 ```javascript
@@ -32,7 +42,7 @@ Obtain a token by sending a post form request to http://127.0.0.1:5615/auth with
 ```
 
 Use the token in the request header:
-POST http://127.0.0.1:5615/payments
+GET http://127.0.0.1:5615/payments
 Authentication: Bearer + token
 
 ```javascript
@@ -60,7 +70,8 @@ Authentication: Bearer + token
     }
 ]
 ```
-
+POST http://127.0.0.1:5615/payments
+Authentication: Bearer + token
 Sample request bank payment
 ```javascript
 {

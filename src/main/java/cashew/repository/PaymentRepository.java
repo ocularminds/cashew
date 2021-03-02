@@ -7,8 +7,9 @@ import cashew.domain.Payment;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import javax.transaction.Transactional;
-import java.math.BigDecimal;
 import java.util.List;
 
 @Transactional
-public interface PaymentRepository extends PaymentBaseRepository<Payment> { /* ... */ }
+public interface PaymentRepository extends PaymentBaseRepository<Payment> { 
+    List<Payment> findAllByMerchant(String merchant);
+}

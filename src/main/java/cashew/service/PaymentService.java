@@ -82,14 +82,19 @@ public class PaymentService {
             output = bankPaymentRepository.save((BankPayment)payment);
         } else if(payment instanceof CardPayment){
             output = cardPaymentRepository.save((CardPayment)payment);
-        } else{
+        } else if(payment instanceof MobilePayment){
             output = mobilePaymentRepository.save((MobilePayment)payment);
+        } else{
+            return fault;
         }
-        Map<String, Object> data = new HashMap<>();
-        data.put("id", output.getId());
-        data.put("reference", output.getReference());
-        data.put("status", output.getStatus());
-        fault.setData(data);
+        
+        if(output != null) {
+            Map<String, Object> data = new HashMap<>();
+            data.put("id", output.getId());
+            data.put("reference", output.getReference());
+            data.put("status", output.getStatus());
+            fault.setData(data);
+        }
         return fault;
     }
 

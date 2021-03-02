@@ -40,7 +40,7 @@ public class MobilePayment extends Payment {
             throw new InvalidParamsException("Mobile phone number is required");
         }
         if(!Pattern.matches(REGREX_FOR_PHONE, this.mobile)) {
-            throw new InvalidParamsException("Invalid mobile number specified.");
+            throw new InvalidParamsException("Invalid phone number specified.");
         }
         return true;
     }

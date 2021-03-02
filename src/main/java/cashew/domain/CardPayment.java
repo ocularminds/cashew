@@ -28,7 +28,7 @@ public class CardPayment extends Payment{
 
     public CardPayment(Map<String, String> params){
         super(params);
-        number = params.get("number");
+        number = params.get("card");
         cvv = params.get("cvv");
         expiry = params.get("expiry");
     }

@@ -117,6 +117,11 @@ public abstract class Payment {
         if (this.amount == null || this.amount.compareTo(Constant.HUNDRED) == -1) {
             throw new InvalidParamsException("Invalid amount " + this.amount);
         }
+              
+        if (this.amount.compareTo(BigInteger.ZERO) == -1) {
+            throw new InvalidParamsException("Invalid amount " + this.amount);
+        }
+
         if (this.reference == null || this.reference.isEmpty()) {
             throw new InvalidParamsException("Invalid reference " + this.reference);
         }

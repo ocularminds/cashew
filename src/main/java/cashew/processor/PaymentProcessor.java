@@ -17,7 +17,7 @@ public class PaymentProcessor implements Processor {
            payment.validate();
            return validateHash(payment, hash);
        } catch (InvalidParamsException ex) {
-           return new Fault(Errors.ERROR_12_INVALID_TRANSACTION, ex.getMessage());
+           return new Fault(Errors.ERROR_12_INVALID_TRANSACTION, ex.getMessage(), payment);
        }
     }
 
@@ -31,9 +31,9 @@ public class PaymentProcessor implements Processor {
         sb.append(input.getEmail());
         sb.append(input.getReference());
         String hashed = String.format("%06d", sb.toString().length());
-        if (!hashed.equalsIgnoreCase(hash)) {
-            return new Fault(Errors.ERROR_59_SUSPECTED_FRAUD, "Bad request or attempted fraud.");
+        if (!hashed.equals(hash)) {
+            return new Fault(Errors.ERROR_59_SUSPECTED_FRAUD, "Bad request or attempted fraud.", input);
         }
-        return new Fault("00", "Success");
+        return new Fault("00", "Success", input);
     }
 }
